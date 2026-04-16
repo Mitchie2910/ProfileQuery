@@ -37,9 +37,18 @@ public class NameProcessingController {
             RequestModel requestModel
     ){
         return idempotencyService.processName(requestModel.getName())
-                .thenApply( apiResponse -> ResponseEntity
-                        .status(HttpStatus.CREATED)
-                        .body(apiResponse)
+                .thenApply( apiResponse -> {
+                    if (apiResponse instanceof FreshResponseDto){
+                        return ResponseEntity
+                                .status(201)
+                                .body(apiResponse);
+                    }
+                    else {
+                        return ResponseEntity
+                                .status(200)
+                                .body(apiResponse);
+                    }
+                        }
                 );
     }
 
