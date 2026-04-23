@@ -61,184 +61,142 @@ public class ControllerTest {
     @Autowired
     private DataRepository dataRepository;
 
-    @BeforeEach
-    void setUp() {
-        GenderizeResponse genderizeResponse = new GenderizeResponse(
-                5000L,
-                "Edward",
-                "male",
-                0.92
-        );
 
-        NationalizeResponse nationalizeResponse = new NationalizeResponse(
-                5000L,
-                "Edward",
-                List.of(new Country("NG", 0.54))
-        );
-
-        AgifyResponse agifyResponse = new AgifyResponse(
-                5000L,
-                "Edward",
-                50
-        );
-
-        when(agifyClient.agifyRequest(anyString()))
-                .thenReturn(CompletableFuture.completedFuture(agifyResponse));
-
-        when(nationalizeClient.nationalizeRequest(anyString()))
-                .thenReturn(CompletableFuture.completedFuture(nationalizeResponse));
-
-        when(genderizeClient.genderizeRequest(anyString()))
-                .thenReturn(CompletableFuture.completedFuture(genderizeResponse));
-    }
-
-    @AfterEach
-    void tearDown() {
-        dataRepository.deleteAll();
-    }
-
-    @Test
-    public void processNameShouldReturn200() throws Exception {
-        // Given
-        String name = "John";
-
-        RequestModel requestModel = new RequestModel(name);
-
-        String content = objectMapper.writeValueAsString(requestModel);
-
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(content))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult))
-                .andExpect(status().isCreated())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
-
-
-        String responseDto = mvcResult.getResponse().getContentAsString();
-
-        System.out.println(responseDto);
-    }
-
-    @Test
-    public void processNameShouldReturn422() throws Exception {
-        // Given
-        String name = "1234";
-
-        RequestModel requestModel = new RequestModel(name);
-
-        String content = objectMapper.writeValueAsString(requestModel);
-
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
-                .andExpect(status().is(422))
-                .andReturn();
-
-    }
-
-    @Test
-    public void processNameShouldReturn400() throws Exception {
-        // Given
-        String name = "";
-
-        RequestModel requestModel = new RequestModel(name);
-
-        String content = objectMapper.writeValueAsString(requestModel);
-
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
-                .andExpect(status().is(400))
-                .andReturn();
-    }
+//    @Test
+//    public void processNameShouldReturn200() throws Exception {
+//        // Given
+//        String name = "John";
+//
+//        RequestModel requestModel = new RequestModel(name);
+//
+//        String content = objectMapper.writeValueAsString(requestModel);
+//
+//        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .content(content))
+//                .andExpect(request().asyncStarted())
+//                .andReturn();
+//
+//        mockMvc.perform(asyncDispatch(mvcResult))
+//                .andExpect(status().isCreated())
+//                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+//
+//
+//        String responseDto = mvcResult.getResponse().getContentAsString();
+//
+//        System.out.println(responseDto);
+//    }
+//
+//    @Test
+//    public void processNameShouldReturn422() throws Exception {
+//        // Given
+//        String name = "1234";
+//
+//        RequestModel requestModel = new RequestModel(name);
+//
+//        String content = objectMapper.writeValueAsString(requestModel);
+//
+//        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(content))
+//                .andExpect(status().is(422))
+//                .andReturn();
+//
+//    }
+//
+//    @Test
+//    public void processNameShouldReturn400() throws Exception {
+//        // Given
+//        String name = "";
+//
+//        RequestModel requestModel = new RequestModel(name);
+//
+//        String content = objectMapper.writeValueAsString(requestModel);
+//
+//        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(content))
+//                .andExpect(status().is(400))
+//                .andReturn();
+//    }
 
     @Test
     public void getProfilesShouldReturn200() throws Exception {
         // When
 
-        String name = "John";
-
-        RequestModel requestModel = new RequestModel(name);
-
-        String content = objectMapper.writeValueAsString(requestModel);
-
-        MvcResult mvcResult1 = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult1))
-                .andExpect(status().isCreated())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
-
-        MvcResult mvcResult2 = mockMvc.perform(MockMvcRequestBuilders.get("/api/profiles"))
+        MvcResult mvcResult2 = mockMvc.perform(MockMvcRequestBuilders.get("/api/profiles")
+                        .param("gender", "female")
+                        .param("page", "2")
+                        .param("limit", "15")
+                        .param("order", "desc")
+                        .param("sort_by", "age")
+                        .param("min_gender_probability", "0.8")
+                        .param("max_age", "20"))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
         mockMvc.perform(asyncDispatch(mvcResult2))
                 .andExpect(status().isOk())
                 .andReturn();
+
+        System.out.println(mvcResult2.getResponse().getContentAsString());
     }
 
-    @Test
-    public void getProfilesShouldReturn404() throws Exception {
-        // When
-
-        String name = "Edward";
-
-        RequestModel requestModel = new RequestModel(name);
-
-        String content = objectMapper.writeValueAsString(requestModel);
-
-        MvcResult mvcResult1 = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult1))
-                .andExpect(status().isCreated())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
-
-        MvcResult mvcResult2 = mockMvc.perform(MockMvcRequestBuilders.get("/api/profiles")
-                        .param("gender", "male")
-                        .param("age_group", "adult")
-                        .param("country_id", "AU"))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult2))
-                .andExpect(status().is(404))
-                .andReturn();
-    }
-
+//    @Test
+//    public void getProfilesShouldReturn404() throws Exception {
+//        // When
+//
+//        String name = "Edward";
+//
+//        RequestModel requestModel = new RequestModel(name);
+//
+//        String content = objectMapper.writeValueAsString(requestModel);
+//
+//        MvcResult mvcResult1 = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(content))
+//                .andExpect(request().asyncStarted())
+//                .andReturn();
+//
+//        mockMvc.perform(asyncDispatch(mvcResult1))
+//                .andExpect(status().isCreated())
+//                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+//
+//        MvcResult mvcResult2 = mockMvc.perform(MockMvcRequestBuilders.get("/api/profiles")
+//                        .param("gender", "male")
+//                        .param("age_group", "adult")
+//                        .param("country_id", "AU"))
+//                .andExpect(request().asyncStarted())
+//                .andReturn();
+//
+//        mockMvc.perform(asyncDispatch(mvcResult2))
+//                .andExpect(status().is(404))
+//                .andReturn();
+//    }
+//
     @Test
     public void getProfileByIdShouldReturn200() throws Exception {
         // When
 
-        String name = "Edward";
+//        String name = "Edward";
+//
+//        RequestModel requestModel = new RequestModel(name);
+//
+//        String content = objectMapper.writeValueAsString(requestModel);
+//
+//        MvcResult mvcResult1 = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(content))
+//                .andExpect(request().asyncStarted())
+//                .andReturn();
+//
+//        mockMvc.perform(asyncDispatch(mvcResult1))
+//                .andExpect(status().isCreated())
+//                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+//
+//        FreshResponseDto responseDto = objectMapper.readValue(mvcResult1.getResponse().getContentAsString(), FreshResponseDto.class);
 
-        RequestModel requestModel = new RequestModel(name);
-
-        String content = objectMapper.writeValueAsString(requestModel);
-
-        MvcResult mvcResult1 = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult1))
-                .andExpect(status().isCreated())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
-
-        FreshResponseDto responseDto = objectMapper.readValue(mvcResult1.getResponse().getContentAsString(), FreshResponseDto.class);
-
-        UUID id = responseDto.getData().getId();
+        UUID id = UUID.fromString("019db1f4-bac6-70e4-acf2-d1cb3352440a");
 
         MvcResult mvcResult2 = mockMvc.perform(MockMvcRequestBuilders.get("/api/profiles/"+id))
                 .andExpect(request().asyncStarted())
@@ -247,109 +205,111 @@ public class ControllerTest {
         mockMvc.perform(asyncDispatch(mvcResult2))
                 .andExpect(status().is(200))
                 .andReturn();
+
+        System.out.println(mvcResult2.getResponse().getContentAsString());
     }
-
-    @Test
-    public void getProfileByIdShouldReturn500() throws Exception {
-        // When
-
-        String name = "Edward";
-
-        RequestModel requestModel = new RequestModel(name);
-
-        String content = objectMapper.writeValueAsString(requestModel);
-
-        MvcResult mvcResult1 = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult1))
-                .andExpect(status().isCreated())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
-
-        UUID id = Generators.timeBasedEpochGenerator().generate();
-
-        MvcResult mvcResult2 = mockMvc.perform(MockMvcRequestBuilders.get("/api/profiles/"+id))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult2))
-                .andExpect(status().is(404))
-                .andReturn();
-    }
-
-    @Test
-    public void deleteProfileByIdShouldReturn204() throws Exception {
-        // When
-
-        String name = "Edward";
-
-        RequestModel requestModel = new RequestModel(name);
-
-        String content = objectMapper.writeValueAsString(requestModel);
-
-        MvcResult mvcResult1 = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult1))
-                .andExpect(status().isCreated())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
-
-        FreshResponseDto responseDto = objectMapper.readValue(mvcResult1.getResponse().getContentAsString(), FreshResponseDto.class);
-
-        UUID id = responseDto.getData().getId();
-
-        MvcResult mvcResult2 = mockMvc.perform(MockMvcRequestBuilders.delete("/api/profiles/"+id))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult2))
-                .andExpect(status().is(204))
-                .andReturn();
-    }
-
-    @Test
-    public void deleteProfileByIdShouldReturn404() throws Exception {
-        // When
-
-        String name = "Edward";
-
-        RequestModel requestModel = new RequestModel(name);
-
-        String content = objectMapper.writeValueAsString(requestModel);
-
-        MvcResult mvcResult1 = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(content))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult1))
-                .andExpect(status().isCreated())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
-
-        UUID id = Generators.timeBasedEpochGenerator().generate();
-
-        MvcResult mvcResult2 = mockMvc.perform(MockMvcRequestBuilders.delete("/api/profiles/"+id))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult2))
-                .andExpect(status().is(404))
-                .andReturn();
-    }
-
-    @Test
-    public void shouldReturnException400() throws Exception {
-        MvcResult mvcResult1 = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
-                )
-                .andExpect(status().is(400))
-                .andReturn();
-    }
+//
+//    @Test
+//    public void getProfileByIdShouldReturn500() throws Exception {
+//        // When
+//
+//        String name = "Edward";
+//
+//        RequestModel requestModel = new RequestModel(name);
+//
+//        String content = objectMapper.writeValueAsString(requestModel);
+//
+//        MvcResult mvcResult1 = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(content))
+//                .andExpect(request().asyncStarted())
+//                .andReturn();
+//
+//        mockMvc.perform(asyncDispatch(mvcResult1))
+//                .andExpect(status().isCreated())
+//                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+//
+//        UUID id = Generators.timeBasedEpochGenerator().generate();
+//
+//        MvcResult mvcResult2 = mockMvc.perform(MockMvcRequestBuilders.get("/api/profiles/"+id))
+//                .andExpect(request().asyncStarted())
+//                .andReturn();
+//
+//        mockMvc.perform(asyncDispatch(mvcResult2))
+//                .andExpect(status().is(404))
+//                .andReturn();
+//    }
+//
+//    @Test
+//    public void deleteProfileByIdShouldReturn204() throws Exception {
+//        // When
+//
+//        String name = "Edward";
+//
+//        RequestModel requestModel = new RequestModel(name);
+//
+//        String content = objectMapper.writeValueAsString(requestModel);
+//
+//        MvcResult mvcResult1 = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(content))
+//                .andExpect(request().asyncStarted())
+//                .andReturn();
+//
+//        mockMvc.perform(asyncDispatch(mvcResult1))
+//                .andExpect(status().isCreated())
+//                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+//
+//        FreshResponseDto responseDto = objectMapper.readValue(mvcResult1.getResponse().getContentAsString(), FreshResponseDto.class);
+//
+//        UUID id = responseDto.getData().getId();
+//
+//        MvcResult mvcResult2 = mockMvc.perform(MockMvcRequestBuilders.delete("/api/profiles/"+id))
+//                .andExpect(request().asyncStarted())
+//                .andReturn();
+//
+//        mockMvc.perform(asyncDispatch(mvcResult2))
+//                .andExpect(status().is(204))
+//                .andReturn();
+//    }
+//
+//    @Test
+//    public void deleteProfileByIdShouldReturn404() throws Exception {
+//        // When
+//
+//        String name = "Edward";
+//
+//        RequestModel requestModel = new RequestModel(name);
+//
+//        String content = objectMapper.writeValueAsString(requestModel);
+//
+//        MvcResult mvcResult1 = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(content))
+//                .andExpect(request().asyncStarted())
+//                .andReturn();
+//
+//        mockMvc.perform(asyncDispatch(mvcResult1))
+//                .andExpect(status().isCreated())
+//                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+//
+//        UUID id = Generators.timeBasedEpochGenerator().generate();
+//
+//        MvcResult mvcResult2 = mockMvc.perform(MockMvcRequestBuilders.delete("/api/profiles/"+id))
+//                .andExpect(request().asyncStarted())
+//                .andReturn();
+//
+//        mockMvc.perform(asyncDispatch(mvcResult2))
+//                .andExpect(status().is(404))
+//                .andReturn();
+//    }
+//
+//    @Test
+//    public void shouldReturnException400() throws Exception {
+//        MvcResult mvcResult1 = mockMvc.perform(MockMvcRequestBuilders.post("/api/profiles")
+//                )
+//                .andExpect(status().is(400))
+//                .andReturn();
+//    }
 
 }

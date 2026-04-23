@@ -52,7 +52,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         if (message.contains("blank")) {
             LOGGER.error("BLANK INPUT ERROR");
             statusCode = HttpStatus.valueOf(400);
-        } else if (message.contains("letters")) {
+        } else if (message.contains("letters")||message.contains("query")) {
             LOGGER.error("INVALID INPUT ERROR");
             statusCode = HttpStatus.valueOf(422);
         } else {
@@ -118,7 +118,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         if (message.contains("blank")) {
             LOGGER.error("BLANK INPUT ERROR");
             status = HttpStatus.valueOf(400);
-        } else if (message.contains("letters")) {
+        } else if (message.contains("letters")|message.contains("query")) {
             LOGGER.error("INVALID INPUT ERROR");
             status = HttpStatus.valueOf(422);
         } else {

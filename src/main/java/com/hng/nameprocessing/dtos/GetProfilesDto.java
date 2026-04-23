@@ -11,15 +11,21 @@ import java.util.List;
 
 @Data
 @Builder
-@JsonPropertyOrder({"status", "count", "data"})
+@JsonPropertyOrder({"status", "page", "limit", "total", "data"})
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetProfilesDto {
     @JsonProperty("status")
     private String status;
 
-    @JsonProperty("count")
-    private int count;
+    @JsonProperty("page")
+    private int page;
+
+    @JsonProperty("limit")
+    private int limit;
+
+    @JsonProperty("total")
+    private long total;
 
     @JsonProperty("data")
     private List<DataRepositoryDto> data;

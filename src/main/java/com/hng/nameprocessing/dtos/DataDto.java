@@ -1,6 +1,7 @@
 package com.hng.nameprocessing.dtos;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
@@ -8,7 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -16,7 +16,7 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonPropertyOrder({"id", "name", "gender", "gender_probability", "sample_size", "age", "age_group", "country_id", "country_probability", "created_at"})
+@JsonPropertyOrder({"id", "name", "gender", "gender_probability", "sample_size", "age", "age_group", "country_id", "country_name", "country_probability", "created_at"})
 public class DataDto {
     @JsonProperty("id")
     private UUID id;
@@ -30,9 +30,6 @@ public class DataDto {
     @JsonProperty("gender_probability")
     private Double genderProbability;
 
-    @JsonProperty("sample_size")
-    private long sampleSize;
-
     @JsonProperty("age")
     private int age;
 
@@ -42,8 +39,11 @@ public class DataDto {
     @JsonProperty("country_id")
     private String countryId;
 
+    @JsonProperty("country_name")
+    private String countryName;
+
     @JsonProperty("country_probability")
-    private BigDecimal countryProbability;
+    private Double countryProbability;
 
     @JsonProperty("created_at")
     private Instant createdAt;

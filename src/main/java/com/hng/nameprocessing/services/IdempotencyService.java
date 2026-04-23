@@ -4,11 +4,14 @@ import com.hng.nameprocessing.dtos.*;
 import com.hng.nameprocessing.exceptions.ServiceValidationException;
 import com.hng.nameprocessing.repositories.CustomDataRepository;
 import com.hng.nameprocessing.repositories.DataRepository;
+import com.hng.nameprocessing.utility.NaturalLanguageProcessor;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.data.autoconfigure.web.DataWebProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -25,13 +28,15 @@ public class IdempotencyService {
     private final DataRepository dataRepository;
     private final CustomDataRepository customDataRepository;
     private final Executor executor;
+    private final NaturalLanguageProcessor naturalLanguageProcessor;
 
 
-    public IdempotencyService(ProcessingService processingService, DataRepository dataRepository, @Qualifier("asyncExecutor")Executor executor, CustomDataRepository customDataRepository) {
+    public IdempotencyService(ProcessingService processingService, DataRepository dataRepository, @Qualifier("asyncExecutor")Executor executor, CustomDataRepository customDataRepository, NaturalLanguageProcessor naturalLanguageProcessor) {
         this.processingService = processingService;
         this.dataRepository = dataRepository;
         this.executor = executor;
         this.customDataRepository = customDataRepository;
+        this.naturalLanguageProcessor = naturalLanguageProcessor;
     }
 
     public CompletableFuture<ApiResponse> processName(String name) {
@@ -69,33 +74,39 @@ public class IdempotencyService {
 
     }
 
-    public CompletableFuture<GetProfilesDto> getProfiles(String gender, String countryId, String ageGroup) {
+    public CompletableFuture<GetProfilesDto> getProfiles(QueryParameters queryParameters, Integer pageLimit, Integer pageNumber, Sort sort) {
+
+        final int safePageLimit = (pageLimit != null && pageLimit > 50)
+                ? 50
+                : pageLimit;
         return CompletableFuture.supplyAsync(() -> {
 
             // Normalize inputs
-            String normalizedGender = normalizeLowerCase(gender);
-            String normalizedCountryId = normalizeUpperCase(countryId);
-            String normalizedAgeGroup = normalizeLowerCase(ageGroup);
+            String normalizedGender = normalizeLowerCase(queryParameters.getGender());
+            String normalizedCountryId = normalizeUpperCase(queryParameters.getCountryId());
+            String normalizedAgeGroup = normalizeLowerCase(queryParameters.getAgeGroup());
 
             List<DataRepositoryDto> resultList = new ArrayList<>();
 
-            Specification<DataMapping> specs = buildSpecs(normalizedGender, normalizedCountryId, normalizedAgeGroup);
+            Specification<DataMapping> specs = buildSpecs(
+                    normalizedGender,
+                    normalizedCountryId,
+                    normalizedAgeGroup,
+                    queryParameters.getMinAge(),
+                    queryParameters.getMaxAge(),
+                    queryParameters.getMinGenderProbability(),
+                    queryParameters.getMinCountryProbability());
 
-            Pageable pageable = PageRequest.of(0, 50);
 
-            while (true) {
-                Page<DataMapping> page = dataRepository.findAll(specs, pageable);
+            Pageable pageable = PageRequest.of(pageNumber-1, safePageLimit, sort);
 
-                page.getContent()
-                        .stream()
-                        .map(this::mappingToDto)
-                        .forEach(resultList::add);
+            Page<DataMapping> page = dataRepository.findAll(specs, pageable);
 
-                if(!page.hasNext()){
-                    break;
-                }
-                pageable = page.nextPageable();
-            }
+            page.getContent()
+                    .stream()
+                    .map(this::mappingToDto)
+                    .forEach(resultList::add);
+
 
             // Throw exception if result returns empty
             if (resultList.isEmpty()) {
@@ -104,7 +115,9 @@ public class IdempotencyService {
 
             return GetProfilesDto.builder()
                     .status("success")
-                    .count(resultList.size())
+                    .page(pageNumber)
+                    .limit(safePageLimit)
+                    .total(page.getTotalElements())
                     .data(resultList)
                     .build();
         }, executor);
@@ -121,11 +134,22 @@ public class IdempotencyService {
         }, executor);
     }
 
+    public CompletableFuture<GetProfilesDto> intelligentSearch(String query, Integer pageLimit, Integer pageNumber, Sort sort) {
+        return CompletableFuture.supplyAsync(() ->
+                naturalLanguageProcessor.processQuery(query), executor)
+                .thenCompose(queryParameters -> getProfiles(queryParameters, pageLimit, pageNumber, sort ));
+
+    }
+
     // Build Query Specifications
     public Specification<DataMapping> buildSpecs(
             String gender,
             String countryId,
-            String ageGroup
+            String ageGroup,
+            Integer minAge,
+            Integer maxAge,
+            Float minGenderProbability,
+            Float minCountryProbability
     ) {
         return ((root, query, criteriaBuilder) -> {
 
@@ -143,6 +167,22 @@ public class IdempotencyService {
                 predicates.add(criteriaBuilder.equal(root.get("ageGroup"), ageGroup));
             }
 
+            if(minAge != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("age"), minAge));
+            }
+
+            if(maxAge != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("age"), maxAge));
+            }
+
+            if(minGenderProbability != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("genderProbability"), minGenderProbability));
+            }
+
+            if(minCountryProbability != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("countryProbability"), minCountryProbability));
+            }
+
             return criteriaBuilder.and(predicates);
         });
     }
@@ -151,11 +191,15 @@ public class IdempotencyService {
     DataRepositoryDto mappingToDto(DataMapping mapping) {
         return DataRepositoryDto.builder()
                 .id(mapping.getId())
-                .name(mapping.getName())
+                .name(mapping.getName().toLowerCase())
                 .age(mapping.getAge())
                 .gender(mapping.getGender())
                 .ageGroup(mapping.getAgeGroup())
+                .countryName(mapping.getCountryName())
+                .countryProbability(mapping.getCountryProbability())
+                .createdAt(mapping.getCreatedAt())
                 .countryId(mapping.getCountryId())
+                .genderProbability(mapping.getGenderProbability())
                 .build();
     }
 
@@ -180,15 +224,17 @@ public class IdempotencyService {
         return new DataDto(
 
                 dataMapping.getId(),
-                dataMapping.getName(),
+                dataMapping.getName().toLowerCase(),
                 dataMapping.getGender(),
                 dataMapping.getGenderProbability(),
-                dataMapping.getSampleSize(),
                 dataMapping.getAge(),
                 dataMapping.getAgeGroup(),
                 dataMapping.getCountryId(),
+                dataMapping.getCountryName(),
                 dataMapping.getCountryProbability(),
                 dataMapping.getCreatedAt()
         );
     }
+
+
 }

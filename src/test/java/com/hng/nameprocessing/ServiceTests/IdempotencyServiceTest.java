@@ -3,16 +3,19 @@ package com.hng.nameprocessing.ServiceTests;
 import com.fasterxml.uuid.Generators;
 import com.hng.nameprocessing.dtos.*;
 import com.hng.nameprocessing.exceptions.ServiceValidationException;
+import com.hng.nameprocessing.repositories.DataRepository;
 import com.hng.nameprocessing.services.IdempotencyService;
 import com.hng.nameprocessing.services.ProcessingService;
 import com.hng.nameprocessing.services.restclients.AgifyClient;
 import com.hng.nameprocessing.services.restclients.GenderizeClient;
 import com.hng.nameprocessing.services.restclients.NationalizeClient;
 import org.checkerframework.checker.units.qual.C;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
@@ -28,6 +31,9 @@ import static org.mockito.Mockito.when;
 public class IdempotencyServiceTest {
     @Autowired
     private IdempotencyService idempotencyService;
+
+    @Autowired
+    private DataRepository dataRepository;
 
     @MockitoBean
     private AgifyClient agifyClient;
@@ -69,91 +75,113 @@ public class IdempotencyServiceTest {
                 .thenReturn(CompletableFuture.completedFuture(genderizeResponse));
     }
 
-//    @Test
-//    public void shouldReturnApiDataDto200(){
-//        // given
-//        String name = "John";
-//        String name2 = "john";
-//
-//        // when
-//        ApiResponse freshResponseDto1 = idempotencyService.processName(name).join();
-//        ApiResponse freshResponseDto2 = idempotencyService.processName(name2).join();
-//
-//        // then
-//        assertThat(freshResponseDto1).isInstanceOf(FreshResponseDto.class);
-//        assertThat(freshResponseDto2).isInstanceOf(IdempotentResponseDto.class);
-//        assertThat(freshResponseDto2.getStatus()).isEqualTo("success");
-//        assertThat(freshResponseDto2.getData().getId()).isEqualTo(freshResponseDto1.getData().getId());
-//
-//    }
-//
-//    @Test
-//    public void shouldReturnApiDataDtoById(){
-//        // given
-//        String name = "Jane";
-//        ApiResponse freshResponseDto1 = idempotencyService.processName(name).join();
-//        UUID id = freshResponseDto1.getData().getId();
-//
-//        // when
-//        FreshResponseDto responseDto = idempotencyService.getProfileById(id).join();
-//
-//        // then
-//        assertThat(freshResponseDto1.getData()).isEqualTo(responseDto.getData());
-//
-//    }
 
     @Test
-    public void shouldThrowServiceValidationException404() {
-        // given
-        String name = "Edward";
+    public void shouldReturn200GetProfiles(){
+        //Given
+        QueryParameters parameters = QueryParameters.builder()
+                .gender(null)
+                .minGenderProbability(null)
+                .maxAge(null)
+                .minAge(null)
+                .ageGroup(null)
+                .minCountryProbability(null)
+                .build();
 
+        int pageNo = 1;
+        int pageLimit = 10;
+        Sort sort = Sort.by(Sort.DEFAULT_DIRECTION, "createdAt");
 
+        //when
+        GetProfilesDto profilesDto = idempotencyService.getProfiles(parameters, pageLimit, pageNo, sort).join();
 
-        ApiResponse freshResponseDto1 = idempotencyService.processName(name).join();
+        //Then
+        assertThat(profilesDto).isNotNull();
 
-        UUID id = Generators.timeBasedEpochGenerator().generate();
-
-
-        // when + then
-        assertThatThrownBy(()->idempotencyService.getProfileById(id).join())
-                .cause()
-                .hasMessage("Data not found for ID");
+        System.out.println(profilesDto);
 
     }
 
     @Test
-    public void shouldReturnFilteredProfiles200() {
+    public void shouldReturn400ResultListEmptyGetProfiles(){
+        //Given
+        QueryParameters parameters = QueryParameters.builder()
+                .gender("shemale")
+                .minGenderProbability(null)
+                .maxAge(null)
+                .minAge(null)
+                .ageGroup(null)
+                .minCountryProbability(null)
+                .build();
 
-        // given
-        String name = "Edward";
+        int pageNo = 1;
+        int pageLimit = 10;
+        Sort sort = Sort.by(Sort.DEFAULT_DIRECTION, "createdAt");
 
-        ApiResponse freshResponseDto1 = idempotencyService.processName(name).join();
+        // when+then
+        assertThatThrownBy(() -> idempotencyService.getProfiles(parameters, pageLimit, pageNo, sort).join())
+                .cause()
+                        .isInstanceOf(ServiceValidationException.class);
 
-        String gender = null;
-        String countryId = null;
-        String ageGroup = null;
 
-        GetProfilesDto result = idempotencyService.getProfiles(gender, countryId, ageGroup).join();
-
-        assertThat(result).isNotNull();
-        assertThat(result.getData().get(0).getAge()).isEqualTo(freshResponseDto1.getData().getAge());
 
     }
 
     @Test
-    public void shouldThrowServiceValidationExceptionDataNotFound404() {
-        String name = "Edward";
+    public void shouldReturn200SearchProfiles(){
+        //Given
 
-        ApiResponse freshResponseDto1 = idempotencyService.processName(name).join();
+        String query = "male and female above 30 and has gender confidence above 0.6";
 
-        String gender = "male";
-        String countryId = "NG";
-        String ageGroup = "child";
+        int pageNo = 1;
+        int pageLimit = 10;
+        Sort sort = Sort.by(Sort.DEFAULT_DIRECTION, "createdAt");
 
-        assertThatThrownBy(() -> idempotencyService.getProfiles(gender, countryId, ageGroup).join())
+        //when
+        GetProfilesDto profilesDto = idempotencyService.intelligentSearch(query, pageLimit, pageNo, sort).join();
+
+        //Then
+        assertThat(profilesDto).isNotNull();
+    }
+
+    @Test
+    public void shouldReturn404SearchProfiles(){
+        //Given
+
+        String query = "male and female above 30 and is a teenager";
+
+        int pageNo = 1;
+        int pageLimit = 10;
+        Sort sort = Sort.by(Sort.DEFAULT_DIRECTION, "createdAt");
+
+        //when+then
+        assertThatThrownBy(() -> idempotencyService.intelligentSearch(query, pageLimit, pageNo, sort).join())
                 .cause()
-                .isInstanceOf(ServiceValidationException.class)
-                .hasMessage("Data not found for query parameters");
+                        .isInstanceOf(ServiceValidationException.class);
+    }
 
+    @Test
+    public void shouldReturnSortedProfiles(){
+        //Given
+        QueryParameters parameters = QueryParameters.builder()
+                .gender(null)
+                .minGenderProbability(null)
+                .maxAge(null)
+                .minAge(null)
+                .ageGroup(null)
+                .minCountryProbability(null)
+                .build();
+
+        int pageNo = 1;
+        int pageLimit = 10;
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+
+        //when
+        GetProfilesDto profilesDto = idempotencyService.getProfiles(parameters, pageLimit, pageNo, sort).join();
+
+        //Then
+        assertThat(profilesDto).isNotNull();
+
+        System.out.println(profilesDto);
     }
 }

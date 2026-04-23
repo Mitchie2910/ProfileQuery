@@ -1,0 +1,36 @@
+version: '2'
+
+services:
+  app:
+    image: 'nameprocessing-app:latest'
+    build:
+      context: .
+    container_name: 'nameprocessing-app'
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+
+  db:
+    image: 'postgres:18.3-alpine'
+    container_name: db
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U mitchel" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+
+volumes:
+  pgdata:

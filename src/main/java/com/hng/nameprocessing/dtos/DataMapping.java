@@ -1,5 +1,6 @@
 package com.hng.nameprocessing.dtos;
 
+import com.fasterxml.uuid.Generators;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -7,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -20,14 +22,16 @@ import java.util.UUID;
 @Data
 public class DataMapping {
     @Id
-    private UUID id;
+    private UUID id = Generators.timeBasedEpochGenerator().generate();
+
     private String name;
     private String gender;
     private Double genderProbability;
-    private long sampleSize;
     private int age;
     private String ageGroup;
     private String countryId;
-    private BigDecimal countryProbability;
+    private String countryName;
+    private Double countryProbability;
+    @CreationTimestamp
     private Instant createdAt;
 }

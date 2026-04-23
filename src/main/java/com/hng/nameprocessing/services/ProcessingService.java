@@ -10,11 +10,13 @@ import com.hng.nameprocessing.services.restclients.NationalizeClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import javax.xml.crypto.Data;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -86,24 +88,28 @@ public class ProcessingService {
                 .max(Comparator.comparingDouble(Country::getProbability))
                 .orElseThrow(() -> new ServiceValidationException("Nationalize returned an invalid response", 502));
 
-        BigDecimal countryProbability = new BigDecimal(maxCountry.getProbability()).setScale(2, RoundingMode.FLOOR);
+        BigDecimal countryProbabilityBigDecimal = new BigDecimal(maxCountry.getProbability()).setScale(2, RoundingMode.FLOOR);
+        double countryProbability = countryProbabilityBigDecimal.doubleValue();
+
+        Locale locale = new Locale("", maxCountry.getCountryId());
+        String countryName = locale.getDisplayCountry();
 
         // building data dto
         DataDto dataDto = DataDto.builder()
-                .id(Generators.timeBasedEpochGenerator().generate())
-                .name(agifyResponse.getName())
+                .name(agifyResponse.getName().toLowerCase())
                 .gender(gender)
                 .genderProbability(probability)
-                .sampleSize(sampleSize)
                 .age(agifyResponse.getAge())
                 .ageGroup(ageGroup)
                 .countryId(maxCountry.getCountryId())
+                .countryName(countryName)
                 .countryProbability(countryProbability)
                 .createdAt(Instant.now())
                 .build();
 
         // transforming data dto to data mapping for persistence
         DataMapping dataMapping = dataDtoDatMapper(dataDto);
+        dataDto.setId(dataMapping.getId());
 
         // saving data mapping
         dataRepository.save(dataMapping);
@@ -115,17 +121,17 @@ public class ProcessingService {
     }
 
     private DataMapping dataDtoDatMapper(DataDto dataDto){
-       return new DataMapping(
-               dataDto.getId(),
-               dataDto.getName(),
-               dataDto.getGender(),
-               dataDto.getGenderProbability(),
-               dataDto.getSampleSize(),
-               dataDto.getAge(),
-               dataDto.getAgeGroup(),
-               dataDto.getCountryId(),
-               dataDto.getCountryProbability(),
-               dataDto.getCreatedAt()
-        );
+
+        DataMapping dataMapping = new DataMapping();
+        dataMapping.setName(dataDto.getName());
+        dataMapping.setGender(dataDto.getGender());
+        dataMapping.setGenderProbability(dataDto.getGenderProbability());
+        dataMapping.setAge(dataDto.getAge());
+        dataMapping.setAgeGroup(dataDto.getAgeGroup());
+        dataMapping.setCountryId(dataDto.getCountryId());
+        dataMapping.setCountryName(dataDto.getCountryName());
+        dataMapping.setCountryProbability(dataDto.getCountryProbability());
+
+        return dataMapping;
     }
 }
