@@ -7,6 +7,7 @@ import com.hng.nameprocessing.services.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -20,6 +21,9 @@ public class Auth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final UserService userService;
     private final JwtService jwtService;
 
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     public Auth2LoginSuccessHandler(UserService userService, JwtService jwtService) {
         this.userService = userService;
         this.jwtService = jwtService;
@@ -31,7 +35,7 @@ public class Auth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
 
-        System.out.println("Authorities: " + authentication.getAuthorities());
+//        System.out.println("Authorities: " + authentication.getAuthorities());
 
 
         OAuth2User oauthUser  = token.getPrincipal();
@@ -57,11 +61,11 @@ public class Auth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         if(isBrowser) {
 
-            response.sendRedirect("http://localhost:3000/dashboard");
-            String accessToken = jwtService.generateAccessToken(ctx);
-            String refreshToken = jwtService.generateRefreshToken(ctx);
-            System.out.println(accessToken);
-            System.out.println(refreshToken);
+            response.sendRedirect(frontendUrl + "/dashboard");
+//            String accessToken = jwtService.generateAccessToken(ctx);
+//            String refreshToken = jwtService.generateRefreshToken(ctx);
+//            System.out.println(accessToken);
+//            System.out.println(refreshToken);
         }
 
 
