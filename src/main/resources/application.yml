@@ -1,0 +1,15 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: ${GITHUB_CLIENT_ID}
+            clientSecret: ${GITHUB_CLIENT_SECRET}
+            redirect-uri: "{baseUrl}/auth/{registrationId}/callback"
+
+app:
+  security:
+    jwt:
+      access-token-expiration: 18000000
+      refresh-token-expiration: 30000000

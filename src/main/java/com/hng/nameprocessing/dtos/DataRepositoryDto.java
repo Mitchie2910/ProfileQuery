@@ -13,6 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DataRepositoryDto {
+    ;
     @JsonProperty("id")
     private UUID id;
 
@@ -42,7 +43,6 @@ public class DataRepositoryDto {
 
     @JsonProperty("created_at")
     private Instant createdAt;
-
     public DataRepositoryDto(@JsonProperty("id") UUID id,
                              @JsonProperty("name") String name,
                              @JsonProperty("gender") String gender,

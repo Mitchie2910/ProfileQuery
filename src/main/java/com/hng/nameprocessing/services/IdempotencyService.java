@@ -2,19 +2,22 @@ package com.hng.nameprocessing.services;
 
 import com.hng.nameprocessing.dtos.*;
 import com.hng.nameprocessing.exceptions.ServiceValidationException;
-import com.hng.nameprocessing.repositories.CustomDataRepository;
+import com.hng.nameprocessing.repositories.StreamRepositoryImpl;
 import com.hng.nameprocessing.repositories.DataRepository;
 import com.hng.nameprocessing.utility.NaturalLanguageProcessor;
 import jakarta.persistence.criteria.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.data.autoconfigure.web.DataWebProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -26,16 +29,18 @@ public class IdempotencyService {
 
     private final ProcessingService processingService;
     private final DataRepository dataRepository;
-    private final CustomDataRepository customDataRepository;
+    private final StreamRepositoryImpl streamRepositoryImpl;
     private final Executor executor;
     private final NaturalLanguageProcessor naturalLanguageProcessor;
 
+    Logger logger = LoggerFactory.getLogger(IdempotencyService.class);
 
-    public IdempotencyService(ProcessingService processingService, DataRepository dataRepository, @Qualifier("asyncExecutor")Executor executor, CustomDataRepository customDataRepository, NaturalLanguageProcessor naturalLanguageProcessor) {
+
+    public IdempotencyService(ProcessingService processingService, DataRepository dataRepository, @Qualifier("asyncExecutor")Executor executor, StreamRepositoryImpl streamRepositoryImpl, NaturalLanguageProcessor naturalLanguageProcessor) {
         this.processingService = processingService;
         this.dataRepository = dataRepository;
         this.executor = executor;
-        this.customDataRepository = customDataRepository;
+        this.streamRepositoryImpl = streamRepositoryImpl;
         this.naturalLanguageProcessor = naturalLanguageProcessor;
     }
 
@@ -112,17 +117,98 @@ public class IdempotencyService {
             if (resultList.isEmpty()) {
                 throw new ServiceValidationException("Data not found for query parameters", 404);
             }
+            String baseUrl = "/api/profiles";
+
+            String next = page.hasNext()
+                    ? baseUrl + "?page=" + (pageNumber + 1) + "&limit=" + safePageLimit
+                    : null;
+
+            String prev = page.hasPrevious()
+                    ? baseUrl + "?page=" + (pageNumber - 1) + "&limit=" + safePageLimit
+                    : null;
+
+            Links links = Links.builder()
+                    .self("/api/profiles?page=%d&limit=%d".formatted(pageNumber, safePageLimit))
+                    .next(next)
+                    .prev(prev)
+                    .build();
 
             return GetProfilesDto.builder()
                     .status("success")
                     .page(pageNumber)
                     .limit(safePageLimit)
                     .total(page.getTotalElements())
+                    .totalPages(page.getTotalPages())
+                    .links(links)
                     .data(resultList)
                     .build();
         }, executor);
 
     }
+
+    @Transactional
+    public void exportProfileCsv(QueryParameters queryParameters, OutputStream outputStream, Sort sort) throws IOException {
+
+            Specification<DataMapping> spec = buildSpecs(
+                    queryParameters.getGender(),
+                    queryParameters.getCountryId(),
+                    queryParameters.getAgeGroup(),
+                    queryParameters.getMinAge(),
+                    queryParameters.getMaxAge(),
+                    queryParameters.getMinGenderProbability(),
+                    queryParameters.getMinCountryProbability()
+            );
+
+            BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(outputStream)
+            );
+
+            writer.write("id,name,gender,gender_probability,age,age_group,country_id,country_name,country_probability,created_at");
+            writer.newLine();
+
+
+            int page = 0;
+            while (true) {
+
+                Page<DataMapping> batch = dataRepository.findAll(
+                        spec,
+                        PageRequest.of(page, 500, sort)
+                );
+
+                if (!batch.hasContent()) break;
+
+                for (DataMapping d : batch) {
+                    writer.write(formatCsv(d));
+                    writer.newLine();
+                }
+
+                writer.flush();
+
+                page++;
+            }
+
+//            try (Stream<DataMapping> stream = dataRepository.streamAllCustom(spec, sort)) {
+//
+//                stream.forEach(p -> writer.println(String.join(",",
+//                        safe(p.getId()),
+//                        safe(p.getName()),
+//                        safe(p.getGender()),
+//                        String.valueOf(p.getGenderProbability()),
+//                        String.valueOf(p.getAge()),
+//                        safe(p.getAgeGroup()),
+//                        safe(p.getCountryId()),
+//                        safe(p.getCountryName()),
+//                        String.valueOf(p.getCountryProbability()),
+//                        String.valueOf(p.getCreatedAt())
+//                )));
+//            }
+//            catch (Exception e){
+//                logger.error();
+//                throw e;
+//            }
+         }
+
+
 
     public CompletableFuture<Void> deleteProfile(UUID id){
         return CompletableFuture.runAsync(() -> {
@@ -235,6 +321,37 @@ public class IdempotencyService {
                 dataMapping.getCreatedAt()
         );
     }
+
+    private String safe(Object value) {
+        if (value == null) return "";
+
+        String str = value.toString();
+
+        // escape quotes
+        str = str.replace("\"", "\"\"");
+
+        // wrap in quotes if needed (comma, newline, quote)
+        if (str.contains(",") || str.contains("\n") || str.contains("\"")) {
+            str = "\"" + str + "\"";
+        }
+        return str;
+    }
+
+    private String formatCsv(DataMapping d) {
+        return String.join(",",
+                safe(d.getId()),
+                safe(d.getName()),
+                safe(d.getGender()),
+                String.valueOf(d.getGenderProbability()),
+                String.valueOf(d.getAge()),
+                safe(d.getAgeGroup()),
+                safe(d.getCountryId()),
+                safe(d.getCountryName()),
+                String.valueOf(d.getCountryProbability()),
+                String.valueOf(d.getCreatedAt())
+        );
+    }
+
 
 
 }

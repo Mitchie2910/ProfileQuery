@@ -71,7 +71,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     // Error handling for non-string name validation failure
     @Override
     protected @Nullable ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        LOGGER.error("TYPE MISMATCH OCCURRED");
+        LOGGER.error("TYPE MISMATCH OCCURRED" + ex.getMessage() +"required " + ex.getRequiredType()+" "+request.getDescription(true));
         ErrorDto errorDto = ErrorDto.builder()
                 .message("Input name cannot be processed")
                 .build();

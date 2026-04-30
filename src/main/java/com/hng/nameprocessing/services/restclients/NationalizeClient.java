@@ -1,6 +1,5 @@
 package com.hng.nameprocessing.services.restclients;
 
-import com.hng.nameprocessing.dtos.AgifyResponse;
 import com.hng.nameprocessing.dtos.NationalizeResponse;
 import com.hng.nameprocessing.exceptions.ExternalApiException;
 import lombok.SneakyThrows;
