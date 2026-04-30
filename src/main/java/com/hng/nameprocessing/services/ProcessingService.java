@@ -1,6 +1,5 @@
 package com.hng.nameprocessing.services;
 
-import com.fasterxml.uuid.Generators;
 import com.hng.nameprocessing.dtos.*;
 import com.hng.nameprocessing.exceptions.ServiceValidationException;
 import com.hng.nameprocessing.repositories.DataRepository;
@@ -10,7 +9,6 @@ import com.hng.nameprocessing.services.restclients.NationalizeClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import javax.xml.crypto.Data;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;

@@ -11,7 +11,7 @@ import java.util.List;
 
 @Data
 @Builder
-@JsonPropertyOrder({"status", "page", "limit", "total", "data"})
+@JsonPropertyOrder({"status", "page", "limit", "total", "total_pages", "links", "data"})
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetProfilesDto {
@@ -26,6 +26,12 @@ public class GetProfilesDto {
 
     @JsonProperty("total")
     private long total;
+
+    @JsonProperty("total_pages")
+    private long totalPages;
+
+    @JsonProperty("links")
+    private Links links;
 
     @JsonProperty("data")
     private List<DataRepositoryDto> data;

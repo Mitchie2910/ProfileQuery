@@ -36,15 +36,13 @@ public class GenderizeClient {
     @SneakyThrows
     public CompletableFuture<GenderizeResponse> genderizeRequest(String name) {
         LOGGER.info("GENDERIZE STARTING");
-        return CompletableFuture.supplyAsync(() -> {
-             return restClient.get()
-                    .uri( uriBuilder -> uriBuilder
-                            .queryParam("name", name)
-                            .build())
-                    .retrieve()
-                    .onStatus(HttpStatusCode::isError, this::errorHandler)
-                    .body(GenderizeResponse.class);
-        }, executor);
+        return CompletableFuture.supplyAsync(() -> restClient.get()
+               .uri( uriBuilder -> uriBuilder
+                       .queryParam("name", name)
+                       .build())
+               .retrieve()
+               .onStatus(HttpStatusCode::isError, this::errorHandler)
+               .body(GenderizeResponse.class), executor);
     }
 
     private void errorHandler(HttpRequest request, ClientHttpResponse response) throws IOException {
