@@ -141,8 +141,7 @@ public class ConfigurationFile {
                         .requestMatchers(HttpMethod.DELETE, "/api/profiles/**")
                         .hasRole("ADMIN")
 
-                        .anyRequest()
-                        .hasAnyRole("ANALYST", "ADMIN")
+                        .anyRequest().hasAnyRole("ANALYST", "ADMIN")
                 )
 
                 .oauth2ResourceServer(oauth2 -> oauth2

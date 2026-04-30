@@ -11,5 +11,8 @@ spring:
 app:
   security:
     jwt:
-      access-token-expiration: 18000000
-      refresh-token-expiration: 30000000
+      access-token-expiration: 180000
+      refresh-token-expiration: 300000
+
+  frontend:
+    url: ${FRONTEND_URL}
