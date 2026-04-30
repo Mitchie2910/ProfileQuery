@@ -85,6 +85,7 @@ public class ConfigurationFile {
                         .anyRequest().permitAll()
                 )
 
+                .cors(cors -> Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
@@ -117,6 +118,7 @@ public class ConfigurationFile {
                                 .logoutSuccessHandler(logoutSuccessHandler)
                 )
 
+                .cors(cors -> Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
