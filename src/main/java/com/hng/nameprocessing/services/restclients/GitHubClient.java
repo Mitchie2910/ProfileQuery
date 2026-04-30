@@ -52,6 +52,9 @@ public class GitHubClient {
 
     public CompletableFuture<String> exchangeCode(String code, String codeVerifier) {
         return CompletableFuture.supplyAsync(() -> {
+            if (code.equals("test-code")){
+                String newcode = "mink";
+            }
 
             MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
             form.add("client_id", clientId);
