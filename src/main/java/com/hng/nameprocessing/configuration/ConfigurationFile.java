@@ -6,6 +6,7 @@ import com.hng.nameprocessing.security.CookieDebugFilter;
 import com.hng.nameprocessing.security.KeyUtils;
 import com.hng.nameprocessing.security.RateLimitingFilter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,8 @@ import java.util.concurrent.Executor;
 public class ConfigurationFile {
 
     public ObjectMapper objectMapper;
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     private final Auth2LoginSuccessHandler successHandler;
     private final CustomLogoutSuccessHandler logoutSuccessHandler;
@@ -202,7 +205,7 @@ public class ConfigurationFile {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:3000")
+                        .allowedOrigins(frontendUrl)
                         .allowedMethods("*")
                         .allowCredentials(true);
             }
