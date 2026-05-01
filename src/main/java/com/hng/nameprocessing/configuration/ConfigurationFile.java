@@ -29,6 +29,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import tools.jackson.databind.ObjectMapper;
@@ -85,7 +86,6 @@ public class ConfigurationFile {
                         .anyRequest().permitAll()
                 )
 
-                .cors(cors -> corsConfigurationSource())
                 .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
@@ -118,7 +118,6 @@ public class ConfigurationFile {
                                 .logoutSuccessHandler(logoutSuccessHandler)
                 )
 
-                .cors(cors -> Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
@@ -159,7 +158,6 @@ public class ConfigurationFile {
                         )
                 )
 
-                .cors(cors -> Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
@@ -198,24 +196,41 @@ public class ConfigurationFile {
         FilterRegistrationBean<RequestLoggingFilter> registration = new FilterRegistrationBean<>();
 
         registration.setFilter(new RequestLoggingFilter());
-        registration.setOrder(Ordered.HIGHEST_PRECEDENCE); // 🔥 absolute first
-        registration.addUrlPatterns("/*"); // apply to all endpoints
+        registration.addUrlPatterns("/*");
 
         return registration;
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public FilterRegistrationBean customCorsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin(frontendUrl);
-        config.addAllowedMethod("*");
+        config.addAllowedOrigin("http://localhost:3000");
         config.addAllowedHeader("*");
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);
-        return source;
+        FilterRegistrationBean bean = new FilterRegistrationBean(new CorsFilter(source));
+
+        //IMPORTANT #2: I didn't stress enough the importance of this line in my original answer,
+        //but it's here where we tell Spring to load this filter at the right point in the chain
+        //(with an order of precedence higher than oauth2's filters)
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return bean;
     }
+
+//    @Bean
+//    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration config = new CorsConfiguration();
+//        config.setAllowCredentials(true);
+//        config.addAllowedOrigin(frontendUrl);
+//        config.addAllowedMethod("*");
+//        config.addAllowedHeader("*");
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", config);
+//        return source;
+//    }
 
 
 
