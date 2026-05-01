@@ -111,6 +111,7 @@ public class ConfigurationFile {
                                 endpoint.baseUri("/auth/*/callback")
                         )
                         .successHandler(successHandler)
+
                 )
 
                 .logout(logout ->

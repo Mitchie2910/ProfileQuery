@@ -61,7 +61,11 @@ public class Auth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         if(isBrowser) {
 
+
+
+
             response.sendRedirect(frontendUrl + "/dashboard");
+
 //            String accessToken = jwtService.generateAccessToken(ctx);
 //            String refreshToken = jwtService.generateRefreshToken(ctx);
 //            System.out.println(accessToken);

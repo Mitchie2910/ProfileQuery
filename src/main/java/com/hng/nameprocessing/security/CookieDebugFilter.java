@@ -22,11 +22,11 @@ public class CookieDebugFilter extends OncePerRequestFilter {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-//        if (auth != null) {
-//            System.out.println("=== Authenticated User ===");
-//            System.out.println("Principal: " + auth.getPrincipal());
-//            System.out.println("Authorities: " + auth.getAuthorities());
-//        }
+        if (auth != null) {
+            System.out.println("=== Authenticated User ===");
+            System.out.println("Principal: " + auth.getPrincipal());
+            System.out.println("Authorities: " + auth.getAuthorities());
+        }
 
         filterChain.doFilter(request, response);
     }
