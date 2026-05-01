@@ -85,7 +85,7 @@ public class ConfigurationFile {
                         .anyRequest().permitAll()
                 )
 
-                .cors(cors -> Customizer.withDefaults())
+                .cors(cors -> corsConfigurationSource())
                 .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
