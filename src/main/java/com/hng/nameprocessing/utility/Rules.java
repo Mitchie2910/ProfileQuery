@@ -2,9 +2,8 @@ package com.hng.nameprocessing.utility;
 
 import com.hng.nameprocessing.dtos.QueryParameters;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -95,23 +94,39 @@ public class Rules {
       COUNTRY_MAP.put(name, code);
     }
 
-    String pathString = Rules.class.getClassLoader().getResource("countries/countries.csv").getPath();
-    Path path = Path.of(pathString).normalize();
+    try (InputStream is = Rules.class.getClassLoader()
+            .getResourceAsStream("countries/countries.csv")) {
 
-    try (Reader reader = new FileReader(path.toFile())) {
-      CSVFormat format = CSVFormat.RFC4180.builder().setHeader().setSkipHeaderRecord(true).get();
-      CSVParser parser = CSVParser.builder().setFormat(format).setReader(reader).get();
-
-      if (parser.getHeaderNames().isEmpty()) {
-        throw new IOException("CSV Headers cannot be empty");
+      if (is == null) {
+        throw new RuntimeException("countries.csv not found in classpath");
       }
 
-      for (CSVRecord record : parser) {
-        NATIONALITY_MAP.put(record.get("demonym").toLowerCase(), record.get("iso2"));
+      try (Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+
+        CSVFormat format = CSVFormat.RFC4180.builder()
+                .setHeader()
+                .setSkipHeaderRecord(true)
+                .get();
+
+        CSVParser parser = CSVParser.builder()
+                .setFormat(format)
+                .setReader(reader)
+                .get();
+
+        if (parser.getHeaderNames().isEmpty()) {
+          throw new IOException("CSV Headers cannot be empty");
+        }
+
+        for (CSVRecord record : parser) {
+          NATIONALITY_MAP.put(
+                  record.get("demonym").toLowerCase(),
+                  record.get("iso2")
+          );
+        }
       }
 
     } catch (IOException e) {
-        throw new RuntimeException(e);
+      throw new RuntimeException(e);
     }
   }
 
