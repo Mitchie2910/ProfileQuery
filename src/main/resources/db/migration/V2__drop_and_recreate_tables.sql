@@ -27,7 +27,7 @@ CREATE TABLE api.mapping (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- Indexes (only where useful)
+
 CREATE INDEX idx_mapping_gender ON api.mapping(gender);
 CREATE INDEX idx_mapping_country_id ON api.mapping(country_id);
 CREATE INDEX idx_mapping_age ON api.mapping(age);

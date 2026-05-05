@@ -78,7 +78,7 @@ public class CSVProcessingService {
                 }
 
             } catch (IOException e) {
-                throw new RuntimeException("File processing failed", e);
+                throw new RuntimeException("Cannot readFile", e);
             }
 
             return result;
