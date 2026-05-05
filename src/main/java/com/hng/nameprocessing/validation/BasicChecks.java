@@ -1,4 +1,3 @@
 package com.hng.nameprocessing.validation;
 
-public interface BasicChecks {
-}
+public interface BasicChecks {}

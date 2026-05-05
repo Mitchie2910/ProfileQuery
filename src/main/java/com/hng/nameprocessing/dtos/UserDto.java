@@ -11,12 +11,15 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 public class UserDto {
-    @JsonProperty("github_id")
-    String githubId;
-    @JsonProperty("username")
-    String username;
-    @JsonProperty("email")
-    String email;
-    @JsonProperty("role")
-    String role;
+  @JsonProperty("github_id")
+  String githubId;
+
+  @JsonProperty("username")
+  String username;
+
+  @JsonProperty("email")
+  String email;
+
+  @JsonProperty("role")
+  String role;
 }

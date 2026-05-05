@@ -12,8 +12,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class LoginRequest {
 
-    @JsonProperty("code")
-    String code;
-    @JsonProperty("code_verifier")
-    String codeVerifier;
+  @JsonProperty("code")
+  String code;
+
+  @JsonProperty("code_verifier")
+  String codeVerifier;
 }

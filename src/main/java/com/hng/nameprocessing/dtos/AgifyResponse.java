@@ -5,12 +5,12 @@ import lombok.Data;
 
 @Data
 public class AgifyResponse {
-    @JsonProperty("count")
-    private final Long count;
+  @JsonProperty("count")
+  private final Long count;
 
-    @JsonProperty("name")
-    private final String name;
+  @JsonProperty("name")
+  private final String name;
 
-    @JsonProperty("age")
-    private final Integer age;
+  @JsonProperty("age")
+  private final Integer age;
 }

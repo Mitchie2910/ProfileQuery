@@ -12,12 +12,13 @@ import lombok.NoArgsConstructor;
 @JsonPropertyOrder({"self", "next", "prev"})
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class Links {
-    @JsonProperty("self")
-    String self;
-    @JsonProperty("next")
-    String next;
-    @JsonProperty("prev")
-    String prev;
+  @JsonProperty("self")
+  String self;
+
+  @JsonProperty("next")
+  String next;
+
+  @JsonProperty("prev")
+  String prev;
 }

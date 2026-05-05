@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class RefreshRequest {
 
-    @JsonProperty("refresh-token")
-    String refreshToken;
-
+  @JsonProperty("refresh-token")
+  String refreshToken;
 }

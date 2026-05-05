@@ -5,15 +5,15 @@ import lombok.Data;
 
 @Data
 public class GenderizeResponse {
-    @JsonProperty("count")
-    private final Long count;
+  @JsonProperty("count")
+  private final Long count;
 
-    @JsonProperty("name")
-    private final String name;
+  @JsonProperty("name")
+  private final String name;
 
-    @JsonProperty("gender")
-    private final String gender;
+  @JsonProperty("gender")
+  private final String gender;
 
-    @JsonProperty("probability")
-    private final Double probability;
+  @JsonProperty("probability")
+  private final Double probability;
 }

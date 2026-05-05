@@ -1,4 +1,3 @@
 package com.hng.nameprocessing.validation;
 
-public interface FormatChecks {
-}
+public interface FormatChecks {}
