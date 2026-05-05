@@ -11,13 +11,15 @@ import lombok.Getter;
 @Getter
 public class RequestModel {
 
+  @NotBlank(message = "Name cannot be blank", groups = BasicChecks.class)
+  @Pattern(
+      regexp = "^[a-zA-Z]+$",
+      message = "name must contain only letters",
+      groups = FormatChecks.class)
+  private String name;
 
-    @NotBlank(message = "Name cannot be blank", groups = BasicChecks.class)
-    @Pattern(regexp = "^[a-zA-Z]+$", message = "name must contain only letters", groups = FormatChecks.class)
-    private String name;
-
-    @JsonCreator
-    public RequestModel(@JsonProperty("name")String name) {
-        this.name = name;
-    }
+  @JsonCreator
+  public RequestModel(@JsonProperty("name") String name) {
+    this.name = name;
+  }
 }

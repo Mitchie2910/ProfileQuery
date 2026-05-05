@@ -1,8 +1,7 @@
 package com.hng.nameprocessing.dtos;
 
-
 public interface ApiResponse {
-    DataDto getData();
+  DataDto getData();
 
-    String getStatus();
+  String getStatus();
 }

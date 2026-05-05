@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FreshResponseDto implements ApiResponse {
-    @JsonProperty("status")
-    private String status;
+  @JsonProperty("status")
+  private String status;
 
-    @JsonProperty("data")
-    private DataDto data;
+  @JsonProperty("data")
+  private DataDto data;
 }

@@ -2,12 +2,11 @@ package com.hng.nameprocessing.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @Builder
@@ -15,24 +14,24 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetProfilesDto {
-    @JsonProperty("status")
-    private String status;
+  @JsonProperty("status")
+  private String status;
 
-    @JsonProperty("page")
-    private int page;
+  @JsonProperty("page")
+  private int page;
 
-    @JsonProperty("limit")
-    private int limit;
+  @JsonProperty("limit")
+  private int limit;
 
-    @JsonProperty("total")
-    private long total;
+  @JsonProperty("total")
+  private long total;
 
-    @JsonProperty("total_pages")
-    private long totalPages;
+  @JsonProperty("total_pages")
+  private long totalPages;
 
-    @JsonProperty("links")
-    private Links links;
+  @JsonProperty("links")
+  private Links links;
 
-    @JsonProperty("data")
-    private List<DataRepositoryDto> data;
+  @JsonProperty("data")
+  private List<DataRepositoryDto> data;
 }

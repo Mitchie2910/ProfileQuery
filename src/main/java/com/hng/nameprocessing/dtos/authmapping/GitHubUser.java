@@ -11,18 +11,18 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 public class GitHubUser {
-    @JsonProperty("login")
-    String login;
+  @JsonProperty("login")
+  String login;
 
-    @JsonProperty("id")
-    Long id;
+  @JsonProperty("id")
+  Long id;
 
-    @JsonProperty("avatar_url")
-    String avatarUrl;
+  @JsonProperty("avatar_url")
+  String avatarUrl;
 
-    @JsonProperty("name")
-    String name;
+  @JsonProperty("name")
+  String name;
 
-    @JsonProperty("email")
-    String email;
+  @JsonProperty("email")
+  String email;
 }
