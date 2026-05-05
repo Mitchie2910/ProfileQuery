@@ -258,5 +258,18 @@ Initilaize the database
 ### 4. Run the application
 `java target/nameprocessing-0.0.1-SNAPSHOT.jar`
 
+## ENVIRONMENT KEYS
+`DATABASE_URL`
+`DB_PASSWORD`
+`DB_USERNAME`
+`CLIENT_ID`
+`CLIENT_SECRET`
+`REDIS_PORT`
+`REDIS_HOST`
+`FRONTEND_URL`
+
+
+
+
 
 
