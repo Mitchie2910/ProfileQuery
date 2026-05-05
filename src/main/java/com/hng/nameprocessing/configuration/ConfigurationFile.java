@@ -220,13 +220,13 @@ public class ConfigurationFile {
   //        return source;
   //    }
 
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-
-    return http.build();
-  }
+//  @Bean
+//  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//    http
+//            .csrf(csrf -> csrf.disable())
+//            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+//
+//    return http.build();
+//  }
 
 }
