@@ -1,1 +1,1 @@
-CREATE INDEX idx_mapping_gender ON api.mapping(name);
+CREATE INDEX idx_mapping_name ON api.mapping(name);
