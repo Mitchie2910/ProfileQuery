@@ -2,6 +2,8 @@ package com.hng.nameprocessing.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import java.io.Serializable;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +15,7 @@ import lombok.NoArgsConstructor;
 @JsonPropertyOrder({"status", "page", "limit", "total", "total_pages", "links", "data"})
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetProfilesDto {
+public class GetProfilesDto implements Serializable {
   @JsonProperty("status")
   private String status;
 

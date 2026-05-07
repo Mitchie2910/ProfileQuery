@@ -215,12 +215,12 @@ public class NameProcessingController {
 
   private String validateOrder(String order) {
     if (order == null || order.isBlank()) {
-      return "asc"; // default fallback
+      return "ASC"; // default fallback
     }
 
     order = order.trim();
 
-    Set<String> allowedFields = Set.of("asc", "desc");
+    Set<String> allowedFields = Set.of("ASC", "DESC");
 
     if (!allowedFields.contains(order)) {
       throw new ServiceValidationException("Invalid entry for order parameter", 422);

@@ -7,12 +7,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @JsonPropertyOrder({"status", "message", "data"})
 @AllArgsConstructor
 @NoArgsConstructor
-public class IdempotentResponseDto implements ApiResponse {
+public class IdempotentResponseDto implements ApiResponse, Serializable {
   @JsonProperty("status")
   private String status;
 

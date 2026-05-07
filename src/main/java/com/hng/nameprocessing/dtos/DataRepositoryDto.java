@@ -2,6 +2,8 @@ package com.hng.nameprocessing.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.*;
@@ -22,7 +24,7 @@ import lombok.*;
 })
 @AllArgsConstructor
 @NoArgsConstructor
-public class DataRepositoryDto {
+public class DataRepositoryDto implements Serializable {
   ;
   @JsonProperty("id")
   private UUID id;

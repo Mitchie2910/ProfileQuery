@@ -7,12 +7,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @JsonPropertyOrder({"status", "data"})
 @AllArgsConstructor
 @NoArgsConstructor
-public class FreshResponseDto implements ApiResponse {
+public class FreshResponseDto implements ApiResponse, Serializable {
   @JsonProperty("status")
   private String status;
 

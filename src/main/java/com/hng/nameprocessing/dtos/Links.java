@@ -7,12 +7,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @JsonPropertyOrder({"self", "next", "prev"})
 @AllArgsConstructor
 @NoArgsConstructor
-public class Links {
+public class Links implements Serializable {
   @JsonProperty("self")
   String self;
 
